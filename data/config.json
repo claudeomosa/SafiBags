@@ -1,0 +1,65 @@
+{
+  "business": {
+    "phone": "254768014285",
+    "phone2": "254719399123",
+    "email": "",
+    "location": "Nairobi, Kenya"
+  },
+  "announcement": "",
+  "hero": {
+    "line1": "Clean",
+    "line2": "starts here.",
+    "lead": "Strong bin liners for homes, shops and offices. Pick your size, send your order on WhatsApp, we deliver."
+  },
+  "products": [
+    {
+      "id": "kitchen",
+      "name": "Kitchen bin",
+      "litres": 40,
+      "size": "20 × 30 in",
+      "weight": "100 g",
+      "price": 4,
+      "active": true
+    },
+    {
+      "id": "everyday",
+      "name": "Everyday bin",
+      "litres": 60,
+      "size": "24 × 36 in",
+      "weight": "80 g",
+      "price": 5,
+      "active": true
+    },
+    {
+      "id": "strong",
+      "name": "Everyday Strong",
+      "litres": 60,
+      "size": "24 × 36 in",
+      "weight": "100 g",
+      "price": 6,
+      "active": true
+    },
+    {
+      "id": "big",
+      "name": "Big bin",
+      "litres": 100,
+      "size": "30 × 36 in",
+      "weight": "100 g",
+      "price": 8,
+      "active": true
+    }
+  ],
+  "repeats": [
+    "One-off",
+    "Every week",
+    "Every 2 weeks",
+    "Every month"
+  ],
+  "delivery": {
+    "areas": "",
+    "minOrderKes": 0,
+    "note": ""
+  },
+  "payment": "",
+  "orderStep": 10
+}
