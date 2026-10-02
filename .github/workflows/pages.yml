@@ -25,9 +25,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # also validates data/config.json, so a bad admin save never deploys
       - run: npm test
-      # Pages is static: the admin panel and its API need a server, so they stay local-only
-      - run: rm -rf app/api app/admin-ui
       - run: npm run build
         env:
           PAGES: 'true'
