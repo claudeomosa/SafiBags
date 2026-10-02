@@ -1,8 +1,8 @@
 import Site from './Site'
-import { readConfig } from '../lib/config'
+import config from '../data/config.json'
 
-export const dynamic = 'force-dynamic' // admin edits show up on the next request
-
+// Prices and settings are baked in at build time. Locally, admin edits to
+// data/config.json hot-reload; on GitHub Pages, pushing the file triggers a rebuild.
 export default function Page() {
-  return <Site config={readConfig()} />
+  return <Site config={config} />
 }
