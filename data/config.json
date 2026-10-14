@@ -6,7 +6,7 @@
     "location": "Nairobi, Kenya",
     "hours": ""
   },
-  "announcement": "",
+  "announcement": "Free delivery in Nairobi this week",
   "hero": {
     "line1": "Clean",
     "line2": "starts here.",
@@ -123,102 +123,111 @@
     ],
     "products": [
       {
+        "id": "bin-liner-18-24-in",
         "name": "Bin liner 18 × 24 in",
         "category": "Bin liners",
         "size": "18 × 24 in",
         "gauge": "100",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
         "price": 500,
-        "moq": "",
-        "active": true,
-        "details": ""
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-20-30-in",
         "name": "Bin liner 20 × 30 in",
         "category": "Bin liners",
         "size": "20 × 30 in",
         "gauge": "100",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
         "price": 700,
-        "moq": "",
-        "active": true,
-        "details": ""
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-24-36-in",
         "name": "Bin liner 24 × 36 in",
         "category": "Bin liners",
         "size": "24 × 36 in",
         "gauge": "100",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
         "price": 800,
-        "moq": "",
-        "active": true,
-        "details": ""
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-30-36-in",
         "name": "Bin liner 30 × 36 in",
         "category": "Bin liners",
         "size": "30 × 36 in",
         "gauge": "100",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
         "price": 850,
-        "moq": "",
-        "active": true,
-        "details": ""
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-20-26-in",
         "name": "Bin liner 20 × 26 in",
         "category": "Bin liners",
         "size": "20 × 26 in",
         "gauge": "",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
-        "price": "",
-        "moq": "",
-        "active": true,
-        "details": ""
+        "price": null,
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-28-34-in",
         "name": "Bin liner 28 × 34 in",
         "category": "Bin liners",
         "size": "28 × 34 in",
         "gauge": "",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
-        "price": "",
-        "moq": "",
-        "active": true,
-        "details": ""
+        "price": null,
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-40-40-in",
         "name": "Bin liner 40 × 40 in",
         "category": "Bin liners",
         "size": "40 × 40 in",
         "gauge": "",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
-        "price": "",
-        "moq": "",
-        "active": true,
-        "details": ""
+        "price": null,
+        "moq": null,
+        "active": true
       },
       {
+        "id": "bin-liner-40-50-in",
         "name": "Bin liner 40 × 50 in",
         "category": "Bin liners",
         "size": "40 × 50 in",
         "gauge": "",
         "colour": "",
+        "details": "",
         "unit": "Pack of 50",
-        "price": "",
-        "moq": "",
-        "active": true,
-        "details": ""
+        "price": null,
+        "moq": null,
+        "active": true
       },
       {
+        "id": "recyclable-garbage-bags",
         "name": "Recyclable garbage bags",
         "category": "Bin liners",
         "size": "",
@@ -226,11 +235,12 @@
         "colour": "",
         "details": "Made with recycled content · sizes and colours on request",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "colour-coded-medical-waste-bag",
         "name": "Colour-coded medical waste bags",
         "category": "Medical waste bags",
         "size": "",
@@ -238,11 +248,12 @@
         "colour": "",
         "details": "Yellow, red and black for waste segregation · sizes on request",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "biohazard-bags",
         "name": "Biohazard bags",
         "category": "Medical waste bags",
         "size": "",
@@ -250,11 +261,12 @@
         "colour": "",
         "details": "Printed biohazard symbol · autoclavable options on request",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "specimen-transport-bags",
         "name": "Specimen transport bags",
         "category": "Medical waste bags",
         "size": "",
@@ -262,11 +274,12 @@
         "colour": "",
         "details": "Zip seal with separate document pouch",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "ziplock-bags",
         "name": "Ziplock bags",
         "category": "Ziplock & self-seal bags",
         "size": "",
@@ -274,11 +287,12 @@
         "colour": "",
         "details": "Clear, resealable · range of sizes",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "self-adhesive-bags",
         "name": "Self-adhesive bags",
         "category": "Ziplock & self-seal bags",
         "size": "",
@@ -286,11 +300,12 @@
         "colour": "",
         "details": "Peel-and-seal flap · clear or printed",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "courier-mailer-bags",
         "name": "Courier & mailer bags",
         "category": "Ziplock & self-seal bags",
         "size": "",
@@ -298,11 +313,12 @@
         "colour": "",
         "details": "Tamper-evident self-seal for deliveries and online orders",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "bread-bags",
         "name": "Bread bags",
         "category": "Food packaging",
         "size": "",
@@ -310,11 +326,12 @@
         "colour": "",
         "details": "Food-contact packaging · clear or printed",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "ice-bags",
         "name": "Ice bags",
         "category": "Food packaging",
         "size": "",
@@ -322,11 +339,12 @@
         "colour": "",
         "details": "For packing and freezing ice",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "stretch-wrap-film",
         "name": "Stretch wrap film",
         "category": "Industrial films",
         "size": "",
@@ -334,11 +352,12 @@
         "colour": "",
         "details": "Hand rolls for wrapping pallets and parcels",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       },
       {
+        "id": "shrink-film",
         "name": "Shrink film",
         "category": "Industrial films",
         "size": "",
@@ -346,8 +365,8 @@
         "colour": "",
         "details": "For bundling and sealing products with heat",
         "unit": "",
-        "price": "",
-        "moq": "",
+        "price": null,
+        "moq": null,
         "active": true
       }
     ],
