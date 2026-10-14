@@ -1,79 +1,9 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { buildOrder, waUrl, prettyPhone, prettyDate, mapsUrl } from '../lib/order'
+import { buildOrder, orderLines, packFor, perBag, waUrl, prettyDate, mapsUrl } from '../lib/order'
+import Link from 'next/link'
 import Mark3D from './Mark3D'
-
-// Brand mark from the identity board: tied bag + lime spark
-const Mark = ({ bag = 'currentColor', spark = '#B4E12B', size = 36 }) => (
-  <svg viewBox="0 0 64 64" width={size} height={size} aria-hidden="true">
-    <path fill={bag} d="M13 25C13 22 15 21 18 21H46C49 21 51 22 51 25L54.5 53C55 58 52 60 48 60H16C12 60 9 58 9.5 53Z" />
-    <path fill={bag} d="M32 21C27 10 16 9 17 16C18 21 26 22 32 21Z" />
-    <path fill={bag} d="M32 21C37 10 48 9 47 16C46 21 38 22 32 21Z" />
-    <path fill={spark} d="M32 31C33 36 35 38 41 40C35 42 33 44 32 49C31 44 29 42 23 40C29 38 31 36 32 31Z" />
-  </svg>
-)
-
-const Logo = () => (
-  <a href="#top" className="logo" aria-label="Safi Bags home">
-    <Mark bag="#B4E12B" spark="#14213D" size={34} />
-    <span>safi<b>BAGS</b></span>
-  </a>
-)
-
-const WaIcon = () => (
-  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor">
-    <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a.9.9 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1 4.9 4.9 0 0 0 1 2.6 11.2 11.2 0 0 0 4.3 3.8c1.6.7 2.2.7 3 .6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3Z" />
-  </svg>
-)
-
-const PinIcon = () => (
-  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
-    <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
-  </svg>
-)
-
-// Follows the device setting until the visitor picks one; the choice is saved and
-// applied before paint by the inline script in layout.js.
-function ThemeToggle() {
-  const [dark, setDark] = useState(null) // null until mounted, avoids a hydration mismatch
-  useEffect(() => {
-    const mq = matchMedia('(prefers-color-scheme: dark)')
-    const sync = () => {
-      const t = document.documentElement.dataset.theme
-      setDark(t ? t === 'dark' : mq.matches)
-    }
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-  const flip = () => {
-    const t = dark ? 'light' : 'dark'
-    document.documentElement.dataset.theme = t
-    try { localStorage.setItem('theme', t) } catch {}
-    setDark(!dark)
-  }
-  return (
-    <button type="button" className="theme" onClick={flip} aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'} title={dark ? 'Light mode' : 'Dark mode'}>
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        {dark ? (
-          <>
-            <circle cx="12" cy="12" r="4.5" />
-            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-          </>
-        ) : (
-          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />
-        )}
-      </svg>
-    </button>
-  )
-}
-
-// Render WhatsApp's *bold* and _italic_ so the preview looks like the real chat
-const waFormat = (text) =>
-  text.split(/(\*[^*\n]+\*|_[^_\n]+_)/).map((s, i) =>
-    s.length > 2 && s[0] === '*' && s.at(-1) === '*' ? <b key={i}>{s.slice(1, -1)}</b>
-      : s.length > 2 && s[0] === '_' && s.at(-1) === '_' ? <i key={i}>{s.slice(1, -1)}</i>
-        : s)
+import { Mark, WaIcon, PinIcon, waFormat, Header, Footer } from './shared'
 
 const GEO_MSG = {
   ok: 'Pin added from your current location.',
@@ -81,6 +11,18 @@ const GEO_MSG = {
   fail: 'Could not get your location. Paste a maps link instead.',
   none: 'Your browser cannot share location. Paste a maps link instead.',
 }
+
+// Pack size chips on a product card; hidden when there's only one pack
+const PackPicker = ({ p, value, onPick }) =>
+  p.packs.length > 1 && (
+    <div className="packs" role="group" aria-label={`${p.name} pack size`}>
+      {p.packs.map((k) => (
+        <button key={k.bags} type="button" className={k.bags === value ? 'on' : ''} aria-pressed={k.bags === value} onClick={() => onPick(k.bags)}>
+          {k.bags} bags
+        </button>
+      ))}
+    </div>
+  )
 
 // Bag illustration whose height grows with bin litres, so sizes compare at a glance
 const BagArt = ({ litres, max }) => {
@@ -113,34 +55,27 @@ const STEPS = [
 
 const FAQ = [
   ['How do I know which size fits my bin?', 'Sizes are named by the bin they fit, and litre sizes are approximate. Check against your bin, or tap a size under “Find your bin”. If unsure, message us on WhatsApp.'],
-  ['What is the difference between Everyday and Everyday Strong?', 'Same 24 × 36 in size. Strong is the heavier 100 g bag for tougher loads.'],
+  ['What does gauge mean?', 'Gauge is the thickness of the plastic. Our bags are 100 gauge, which is 25 micron: strong enough for kitchen and office waste without tearing.'],
   ['Can I get another size?', 'Yes. We also make 20 × 26, 28 × 34, 40 × 40 and 40 × 50 in. Ask us for a price on WhatsApp.'],
   ['Can I set up a repeat delivery?', 'Yes. Pick weekly, every 2 weeks or monthly in the order form and we set it up when you send the message.'],
   ['Is anything sent automatically?', 'No. The order button opens WhatsApp with your message typed out. Nothing is sent until you press send.'],
 ]
 
 export default function Site({ config }) {
-  const { business, hero, repeats, delivery, payment, announcement, orderStep } = config
+  const { business, hero, repeats, delivery, payment, announcement } = config
   const products = useMemo(() => config.products.filter((p) => p.active), [config.products])
   const litres = [...new Set(products.map((p) => p.litres))].sort((a, b) => a - b)
   const maxL = Math.max(...litres)
   const phone = business.phone
-  const phone2 = business.phone2
 
-  const [qty, setQty] = useState({})
+  const [qty, setQty] = useState({}) // productId -> number of packs
+  const [pack, setPack] = useState({}) // productId -> bags per pack chosen
   const [pick, setPick] = useState(null)
-  const [menu, setMenu] = useState(false)
   const [form, setForm] = useState({ name: '', area: '', location: '', mapLink: '', contactName: '', contactPhone: '', date: '', time: 'Morning', repeat: repeats[0], notes: '' })
   const [other, setOther] = useState(false) // someone else receives the delivery
   const [geo, setGeo] = useState(null) // null | busy | ok | denied | fail | none
   const [today, setToday] = useState('')
   useEffect(() => setToday(new Date().toISOString().slice(0, 10)), [])
-  useEffect(() => {
-    document.body.style.overflow = menu ? 'hidden' : ''
-    const esc = (e) => e.key === 'Escape' && setMenu(false)
-    addEventListener('keydown', esc)
-    return () => removeEventListener('keydown', esc)
-  }, [menu])
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
   const locate = () => {
@@ -154,10 +89,10 @@ export default function Site({ config }) {
   }
   const mapBad = form.mapLink && !/^https?:\/\/\S+$/i.test(form.mapLink.trim())
   const bump = (id, d) => setQty((q) => ({ ...q, [id]: Math.max(0, (q[id] || 0) + d) }))
-  const add = (id) => !qty[id] && bump(id, orderStep)
+  const choose = (id, bags) => setPack((k) => ({ ...k, [id]: bags }))
+  const lines = orderLines(products, qty, pack)
   // contact fields only count while the "someone else" box is ticked
-  const order = buildOrder({ products, phone, qty, ...form, mapLink: mapBad ? '' : form.mapLink.trim(), ...(other ? {} : { contactName: '', contactPhone: '' }) })
-  const bags = Object.values(qty).reduce((a, b) => a + b, 0)
+  const order = buildOrder({ products, phone, qty, pack, ...form, mapLink: mapBad ? '' : form.mapLink.trim(), ...(other ? {} : { contactName: '', contactPhone: '' }) })
   const short = order && delivery.minOrderKes > order.total ? delivery.minOrderKes - order.total : 0
   const ready = order && !short
   const enquiry = (m = 'Hi Safi Bags, I have a question.') => waUrl(phone, m)
@@ -167,23 +102,7 @@ export default function Site({ config }) {
   return (
     <>
       <a className="skip" href="#order">Skip to order form</a>
-      {announcement && <div className="announce">{announcement}</div>}
-
-      <header className="nav" id="top">
-        <div className="wrap nav-in">
-          <Logo />
-          <nav className={menu ? 'open' : ''} aria-label="Main">
-            {links.map(([h, t]) => <a key={h} href={h} onClick={() => setMenu(false)}>{t}</a>)}
-            <a className="btn lime sm" href="#order" onClick={() => setMenu(false)}>Order now</a>
-          </nav>
-          <div className="nav-end">
-            <ThemeToggle />
-            <button className="burger" aria-label="Menu" aria-expanded={menu} onClick={() => setMenu(!menu)}>
-              <span /><span />
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header part="homes" links={links} cta={['#order', 'Order now']} announcement={announcement} />
 
       <section className="hero">
         <div className="wrap hero-in">
@@ -200,7 +119,7 @@ export default function Site({ config }) {
             </div>
             <dl className="stats">
               <div><dt>Sizes</dt><dd>{products.length}</dd></div>
-              <div><dt>From</dt><dd>KES {Math.min(...products.map((p) => p.price))}<small>/bag</small></dd></div>
+              <div><dt>From</dt><dd>KES {Math.min(...products.flatMap((p) => p.packs.map(perBag)))}<small>/bag</small></dd></div>
               <div><dt>Bins</dt><dd>{litres[0]}–{maxL} L</dd></div>
             </dl>
           </div>
@@ -251,6 +170,7 @@ export default function Site({ config }) {
           <div className="grid">
             {products.map((p) => {
               const n = qty[p.id] || 0
+              const k = packFor(p, pack[p.id])
               return (
                 <article className={`card${pick !== null && pick !== p.litres ? ' dim' : ''}${pick === p.litres ? ' hit' : ''}`} key={p.id}>
                   <div className="art">
@@ -261,18 +181,19 @@ export default function Site({ config }) {
                     <h3>{p.name}</h3>
                     <dl>
                       <div><dt>Size</dt><dd>{p.size}</dd></div>
-                      <div><dt>Weight</dt><dd>{p.weight}</dd></div>
+                      {p.gauge && <div><dt>Gauge</dt><dd>{p.gauge}</dd></div>}
                     </dl>
+                    <PackPicker p={p} value={k.bags} onPick={(b) => choose(p.id, b)} />
                     <div className="buy">
-                      <strong>KES {p.price}<small>/bag</small></strong>
+                      <strong>KES {k.price.toLocaleString()}<small> / {k.bags} bags · KES {perBag(k)}/bag</small></strong>
                       {n ? (
                         <div className="stepper sm">
-                          <button type="button" onClick={() => bump(p.id, -orderStep)} aria-label={`Fewer ${p.name}`}>−</button>
-                          <output>{n}</output>
-                          <button type="button" onClick={() => bump(p.id, orderStep)} aria-label={`More ${p.name}`}>+</button>
+                          <button type="button" onClick={() => bump(p.id, -1)} aria-label={`One pack fewer of ${p.name}`}>−</button>
+                          <output aria-label={`${p.name} packs`}>{n}</output>
+                          <button type="button" onClick={() => bump(p.id, 1)} aria-label={`One pack more of ${p.name}`}>+</button>
                         </div>
                       ) : (
-                        <button type="button" className="add" onClick={() => add(p.id)}>Add {orderStep}</button>
+                        <button type="button" className="add" onClick={() => bump(p.id, 1)}>Add pack</button>
                       )}
                     </div>
                   </div>
@@ -298,7 +219,7 @@ export default function Site({ config }) {
             <p className="kicker">For businesses</p>
             <h3>Stock for shops, offices and sites.</h3>
             <p>Big bin and commercial rolls with bulk pricing. Tell us what you go through and we will quote.</p>
-            <a className="btn lime" href={enquiry('Hi Safi Bags, I want a bulk quote.')} target="_blank" rel="noreferrer">Get a bulk quote</a>
+            <Link className="btn lime" href="/industries/">See business range →</Link>
           </div>
         </div>
       </section>
@@ -329,16 +250,29 @@ export default function Site({ config }) {
             <fieldset>
               <legend><span>1</span> Bags</legend>
               <div className="rows">
-                {products.map((p) => (
-                  <div className={`row${qty[p.id] ? ' has' : ''}`} key={p.id}>
-                    <div><b>{p.name}</b><small>{p.size} · KES {p.price}/bag</small></div>
-                    <div className="stepper">
-                      <button type="button" onClick={() => bump(p.id, -orderStep)} aria-label={`Fewer ${p.name}`}>−</button>
-                      <output aria-label={`${p.name} quantity`}>{qty[p.id] || 0}</output>
-                      <button type="button" onClick={() => bump(p.id, orderStep)} aria-label={`More ${p.name}`}>+</button>
+                {products.map((p) => {
+                  const k = packFor(p, pack[p.id])
+                  return (
+                    <div className={`row${qty[p.id] ? ' has' : ''}`} key={p.id}>
+                      <div className="row-info">
+                        <b>{p.name}</b>
+                        <small>{[p.size, p.gauge && `${p.gauge} gauge`].filter(Boolean).join(' · ')}</small>
+                        {p.packs.length > 1 ? (
+                          <select value={k.bags} onChange={(e) => choose(p.id, Number(e.target.value))} aria-label={`${p.name} pack size`}>
+                            {p.packs.map((o) => <option key={o.bags} value={o.bags}>Pack of {o.bags} · KES {o.price.toLocaleString()}</option>)}
+                          </select>
+                        ) : (
+                          <small>Pack of {k.bags} · KES {k.price.toLocaleString()}</small>
+                        )}
+                      </div>
+                      <div className="stepper">
+                        <button type="button" onClick={() => bump(p.id, -1)} aria-label={`One pack fewer of ${p.name}`}>−</button>
+                        <output aria-label={`${p.name} packs`}>{qty[p.id] || 0}</output>
+                        <button type="button" onClick={() => bump(p.id, 1)} aria-label={`One pack more of ${p.name}`}>+</button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </fieldset>
 
@@ -395,7 +329,7 @@ export default function Site({ config }) {
             <h3>Your order</h3>
             {order ? (
               <>
-                <ul>{products.filter((p) => qty[p.id] > 0).map((p) => <li key={p.id}><span>{qty[p.id]} × {p.name}</span><b>KES {(qty[p.id] * p.price).toLocaleString()}</b></li>)}</ul>
+                <ul>{lines.map((l) => <li key={l.id}><span>{l.n} × {l.name} <small>(pack of {l.pack.bags})</small></span><b>KES {l.cost.toLocaleString()}</b></li>)}</ul>
                 <div className="sum-total"><span>Total</span><b>KES {order.total.toLocaleString()}</b></div>
                 {(form.area || form.location) && <p className="meta">📍 {[form.area, form.location].filter(Boolean).join(' · ')}{form.mapLink && !mapBad ? ' · pin added' : ''}</p>}
                 {other && (form.contactName || form.contactPhone) && <p className="meta">👤 {[form.contactName, form.contactPhone].filter(Boolean).join(', ')}</p>}
@@ -408,7 +342,7 @@ export default function Site({ config }) {
                 </details>
               </>
             ) : (
-              <div className="empty"><Mark size={44} /><p>Add bags to start. Bags go up in {orderStep}s.</p></div>
+              <div className="empty"><Mark size={44} /><p>Add packs to start.</p></div>
             )}
             {short > 0 && <p className="warn">Minimum order is KES {delivery.minOrderKes.toLocaleString()}. Add KES {short.toLocaleString()} more.</p>}
             <a className={`btn lime block${ready ? '' : ' off'}`} aria-disabled={!ready} href={ready ? order.url : undefined} target="_blank" rel="noreferrer"><WaIcon /> Send on WhatsApp</a>
@@ -441,32 +375,12 @@ export default function Site({ config }) {
         </div>
       </section>
 
-      <footer id="contact">
-        <div className="wrap foot">
-          <div>
-            <Logo />
-            <p>Bin liners for homes and businesses across Kenya.</p>
-          </div>
-          <div>
-            <h4>Talk to us</h4>
-            <a href={enquiry()} target="_blank" rel="noreferrer">WhatsApp {prettyPhone(phone)}</a>
-            <a href={`tel:+${phone}`}>Call {prettyPhone(phone)}</a>
-            {phone2 && <a href={`tel:+${phone2}`}>Also {prettyPhone(phone2)}</a>}
-            {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
-          </div>
-          <div>
-            <h4>Find us</h4>
-            <p>{business.location}</p>
-            <p>Bulk orders welcome</p>
-          </div>
-        </div>
-        <p className="wrap copy">© {new Date().getFullYear()} Safi Bags</p>
-      </footer>
+      <Footer business={business} blurb="Bin liners for homes and businesses across Kenya." />
 
       {/* mobile: running total once there is something to order, otherwise a WhatsApp shortcut */}
       {order ? (
         <div className="mbar">
-          <div><small>{bags} bags</small><b>KES {order.total.toLocaleString()}</b></div>
+          <div><small>{order.bags} bags</small><b>KES {order.total.toLocaleString()}</b></div>
           <a className="btn lime sm" href="#order">Review & send</a>
         </div>
       ) : (
