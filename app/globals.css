@@ -488,6 +488,10 @@ footer { background: var(--deep); color: var(--soft); border-top: 1px solid var(
 .savebar .btn { border: 0; cursor: pointer; padding: 12px 24px; }
 .ok { color: var(--lime); font-weight: 600; } .err { color: var(--danger); font-weight: 600; }
 .savebar .err { color: #ff8a80; }
+.savebar .note { color: #aab2c8; font-size: 14px; }
+.savebar .pub { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+.savebar { flex-wrap: wrap; }
+.spin { width: 14px; height: 14px; flex: none; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .8s linear infinite; }
 .login .ok { color: var(--good); }
 
 @media (max-width: 860px) {

@@ -1,9 +1,23 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { migrate, validate } from '../../lib/config'
-import { REPO, loadConfig, saveConfig } from '../../lib/github'
+import { REPO, loadConfig, saveConfig, deployStatus } from '../../lib/github'
 
 const KEY = 'sb_gh_token'
+
+// What the admin is told after saving, per publishing state (see deployStatus)
+const DEPLOY = {
+  waiting: { tone: 'ok', text: 'Saved ✓ Publishing to the live site… this usually takes 2–3 minutes. You can keep editing.' },
+  queued: { tone: 'ok', text: 'Saved ✓ Publishing to the live site… this usually takes 2–3 minutes. You can keep editing.' },
+  building: { tone: 'ok', text: 'Saved ✓ Building the live site… almost there.' },
+  live: { tone: 'ok', text: 'Live ✓ Your changes are on the site. Still seeing the old version? Refresh in a few minutes (browsers can cache it for up to 10 minutes).', site: true },
+  replaced: { tone: 'ok', text: 'Saved ✓ A newer save is publishing these changes too.' },
+  failed: { tone: 'err', text: 'Saved, but publishing failed, so the site still shows the previous version. Open the details or try saving again.' },
+  unknown: { tone: 'ok', text: 'Saved ✓ Publishing is taking longer than usual, or its status is unavailable. Check the details.' },
+}
+const DONE = ['live', 'failed', 'replaced', 'unknown']
+const POLL_MS = 20000
+const POLL_MAX = 18 // ~6 minutes, then "taking longer than usual"
 const blank = { name: '', litres: 60, size: '', gauge: '', packs: [{ bags: 10, price: '' }], active: true }
 const blankBiz = { name: '', category: '', size: '', gauge: '', colour: '', details: '', unit: '', price: '', moq: '', active: true }
 const TABS = [['homes', 'Homes site'], ['business', 'Business site'], ['contact', 'Contact & ordering']]
@@ -30,6 +44,7 @@ export default function Panel() {
   const [sha, setSha] = useState(null)
   const [msg, setMsg] = useState(null) // { ok, text, link? }
   const [busy, setBusy] = useState(false)
+  const [deploy, setDeploy] = useState(null) // { sha, state, url, commitUrl } for the last save
   const newest = useRef(null) // id of a just-added row's name input, focused once it renders
   const [tab, setTab] = useState('homes')
 
@@ -62,8 +77,23 @@ export default function Panel() {
     const clean = validate(cfg) // same check CI runs before deploying
     const r = await saveConfig(token, clean, sha)
     setCfg(clean); setSha(r.sha)
-    setMsg({ ok: true, text: 'Saved. The site rebuilds in about 2 minutes; some browsers may show the old version for up to 10 minutes.', link: r.commitUrl })
+    setDeploy({ sha: r.commitSha, state: 'waiting', commitUrl: r.commitUrl })
   })
+
+  // Follow the last save until it is live (or failed), so the admin knows when visitors will see it
+  useEffect(() => {
+    if (!deploy || DONE.includes(deploy.state)) return
+    let tries = 0
+    const id = setInterval(async () => {
+      tries++
+      const s = await deployStatus(deploy.sha)
+      let state = s.state
+      if (state === 'unknown' && tries < POLL_MAX) state = deploy.state // brief API hiccup: keep showing progress
+      else if (tries >= POLL_MAX && !DONE.includes(state)) state = 'unknown' // give up waiting, link to details
+      setDeploy((d) => (d?.sha === deploy.sha ? { ...d, state, url: s.url || d.url } : d))
+    }, POLL_MS)
+    return () => clearInterval(id)
+  }, [deploy?.sha, deploy?.state])
 
   const up = (path, v) => setCfg((c) => {
     const n = structuredClone(c); let o = n; const k = path.split('.')
@@ -157,7 +187,7 @@ export default function Panel() {
         {F({ label: 'Intro text', path: 'hero.lead', wide: true })}
       </div></section>
 
-      <section><h2>Products and prices (KES per bag)</h2>
+      <section><h2>Products, pack sizes and prices</h2>
         <div className="ptable">
           {cfg.products.map((p, i) => (
             <div className="pcard" key={i}>
@@ -242,10 +272,17 @@ export default function Panel() {
       </>}
 
       <div className="savebar">
-        {msg && (
-          <span className={msg.ok ? 'ok' : 'err'} role="alert">
-            {msg.text} {msg.link && <a href={msg.link} target="_blank" rel="noreferrer">View change ↗</a>}
+        {msg ? (
+          <span className={msg.ok ? 'ok' : 'err'} role="alert">{msg.text}</span>
+        ) : deploy ? (
+          <span className={`${DEPLOY[deploy.state].tone} pub`} role="status" aria-live="polite">
+            {!DONE.includes(deploy.state) && <i className="spin" aria-hidden="true" />}
+            {DEPLOY[deploy.state].text}{' '}
+            {DEPLOY[deploy.state].site && <><a href="../" target="_blank" rel="noreferrer">View site ↗</a>{' '}</>}
+            {deploy.url ? <a href={deploy.url} target="_blank" rel="noreferrer">Details ↗</a> : <a href={deploy.commitUrl} target="_blank" rel="noreferrer">View change ↗</a>}
           </span>
+        ) : (
+          <span className="note">Changes go live a few minutes after you save.</span>
         )}
         <button className="btn lime" onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
       </div>
